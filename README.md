@@ -14,7 +14,7 @@
 * 请尽可能保留路径的双引号 
 ### 自行打包exe
 ***
-请编辑先async_main_windows.spec的路径部分，并且自行下载ffmpeg到对应路径（github文件大小限制）
+请先编辑async_main_windows.spec的路径部分，并且自行下载ffmpeg到对应路径（github文件大小限制）
 ```
 pip install pyinstaller
 pyinstaller .\async_main_windows.spec
