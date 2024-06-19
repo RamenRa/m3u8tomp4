@@ -4,7 +4,7 @@
 a = Analysis(
     ['async_main_windows.py'],
     pathex=[],
-    binaries=[('D:\\[替换成你的路径]\\ffmpeg_pack\\bin\\ffmpeg.exe', 'ffmpeg')],
+    binaries=[('D:\\[替换成你的路径]\\ffmpeg_pack\\bin\\ffmpeg.exe', 'ffmpeg_pack')],
     datas=[],
     hiddenimports=[],
     hookspath=[],
