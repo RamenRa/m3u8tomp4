@@ -1,10 +1,10 @@
 ## 关于利用ffmpeg将m3u8切片转换成mp4的工具
 
 ### 直接使用：
-* 需要系统环境变量包含ffmpeg或者安装ffmpeg-python库
+* 需要系统环境变量ffmpeg可用 或者 安装ffmpeg-python库
 示例：python3 async_main.py --media "D:\Huawei Share\test" 
 
-== 请尽可能保留路径的双引号 ==
+* 请尽可能保留路径的双引号 
 ### 自行打包exe
 ```
 pip install pyinstaller
