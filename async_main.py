@@ -14,6 +14,10 @@ except ModuleNotFoundError:
 
 def check_media(path: str) -> list:
     path = path.replace(os.sep, '/')
+    if not os.path.exists(path):
+        print(path, '不存在')
+        time.sleep(3)
+        exit()
     # if path[-1] != '/':  # 如果没有以'/'为结尾 就补齐
     #     path = path + '/'
 
@@ -33,18 +37,21 @@ def check_media(path: str) -> list:
 
 def tag_folder(folders: List[str], ext: str) -> List[str]:
     matching_folders = []
-    for folder in folders:
+    if ext:
         if ext:
-            # 如果扩展名不为空，构造正则表达式匹配纯数字文件名并且有指定扩展名
-            pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$')
-        else:
-            # 如果扩展名为空，只匹配纯数字文件名
-            pattern = re.compile(r'^\d+$')
-
+            # 历史遗留问题，保持以前用户的使用习惯
+            pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$') \
+                if not ext.startswith('.') \
+                else re.compile(r'^\d+' + re.escape(ext) + r'$')
+    else:
+        # 如果扩展名为空，只匹配纯数字文件名
+        pattern = re.compile(r'^\d+$')
+    for folder in folders:
         numeric_files = [file for file in os.listdir(folder) if pattern.match(file)]
         if len(numeric_files) >= 5:  # 确保文件数大于等于5
             matching_folders.append(folder)
     return matching_folders
+
 
 def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[str], List[str], List[str]]:
     encrypted_folders = []
