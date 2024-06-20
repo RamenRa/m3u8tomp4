@@ -6,7 +6,20 @@ from typing import List, Tuple
 import time
 ffmpeg_flag = False
 
-def check_media(path: str) -> list:
+
+def check_media(path: str, count) -> list:
+    path = path.strip('"').replace(os.sep, '/')
+    try:
+        int(count)
+    except ValueError:
+        print('请输入合法的整数')
+        time.sleep(3)
+        exit()
+
+    if not os.path.exists(path):
+        print(path, '不存在')
+        time.sleep(3)
+        exit()
     # folders = []
     # for root, dirs, files in os.walk(path):
     #     for dir_name in dirs:
@@ -23,18 +36,20 @@ def check_media(path: str) -> list:
 
 def tag_folder(folders: List[str], ext: str) -> List[str]:
     matching_folders = []
+    if ext:
+        # 历史遗留问题，保持以前用户的使用习惯
+        pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$') \
+            if not ext.startswith('.') \
+            else re.compile(r'^\d+' + re.escape(ext) + r'$')
+    else:
+        # 如果扩展名为空，只匹配纯数字文件名
+        pattern = re.compile(r'^\d+$')
     for folder in folders:
-        if ext:
-            # 如果扩展名不为空，构造正则表达式匹配纯数字文件名并且有指定扩展名
-            pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$')
-        else:
-            # 如果扩展名为空，只匹配纯数字文件名
-            pattern = re.compile(r'^\d+$')
-
         numeric_files = [file for file in os.listdir(folder) if pattern.match(file)]
         if len(numeric_files) >= 5:  # 确保文件数大于等于5
             matching_folders.append(folder)
     return matching_folders
+
 
 def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[str], List[str], List[str]]:
     encrypted_folders = []
@@ -88,13 +103,14 @@ def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
                 .run(capture_stderr=True)
             )
     else:
-        ffmpeg_path = os.path.join(os.path.dirname(sys.argv[0]), '_internal/ffmpeg/ffmpeg.exe').replace(os.sep, '/')
+        ffmpeg_path = os.path.join(os.path.dirname(sys.argv[0]), '_internal/ffmpeg_pack/ffmpeg.exe').replace(os.sep, '/')
         if function == "normal":
             cmd = f'{ffmpeg_path} -f concat -safe 0 -i "{new_m3u8}" -c copy "{output_file}"'
             os.system(cmd)
         elif function == "aes128":
             cmd = f'{ffmpeg_path} -allowed_extensions ALL -i "{new_m3u8}" -c copy "{output_file}"'
             os.system(cmd)
+
 
 async def cmd_pool(new_m3u8: str, output_file: str, function: str, semaphore: asyncio.Semaphore) -> None:
     output_file = output_file.replace('.m3u8_contents', '')
@@ -105,6 +121,7 @@ async def cmd_pool(new_m3u8: str, output_file: str, function: str, semaphore: as
         except ffmpeg.Error as e:
             print('ffmpeg error:', e.stderr.decode('utf8'))
             raise
+
 
 async def AES128(encrypted_folders: List[str], key_files: List[str], key_map: List[str], ts_end: str, semaphore: asyncio.Semaphore):
     async def sort_func(path: str) -> List[int]:
@@ -209,16 +226,16 @@ async def Normal(unencrypted_folders, ts_end, semaphore):
 
 
 async def main(media, ts_end, count):
-    semaphore = asyncio.Semaphore(count)
     if not ts_end:
         print("---------没有指定ts后缀，默认为空---------")
         print("--------- 若想指定，请5秒内取消 ---------")
         time.sleep(5)
     if media:
         start_time = time.time()
-        folder = check_media(media)  # 查找给定路径下的文件夹
+        folder = check_media(media, count)  # 先检查输入参数并查找给定路径下的文件夹
         result = tag_folder(folder, ts_end)  # 选出文件名为纯数字且数量大于5个的文件夹
         encrypted_folders, unencrypted_folders, key_files, key_map = classify_folders(result, "key")
+        semaphore = asyncio.Semaphore(count)  # 控制同时转换的数量
         if encrypted_folders:  # 有加密视频
             await AES128(encrypted_folders, key_files, key_map, ts_end, semaphore)
         if unencrypted_folders:
@@ -235,13 +252,7 @@ if __name__ == "__main__":
 
     media = input("请输入媒体文件路径（media）：")
     ts_end = input("请输入ts文件后缀（默认为空）：")
-    count_input = input("请输入计数值（默认为8）：")
-    media = media.strip('"')
-    try:
-        count = int(count_input) if count_input else 8
-    except ValueError:
-        print("计数值必须是一个整数，使用默认值8")
-        count = 8
+    count = input("请输入最大同时转换数（默认为8）：")
 
     asyncio.run(main(media, ts_end, count))
 
