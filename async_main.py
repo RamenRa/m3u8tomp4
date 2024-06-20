@@ -12,15 +12,19 @@ except ModuleNotFoundError:
     ffmpeg_flag = False
 
 
-def check_media(path: str) -> list:
-    path = path.replace(os.sep, '/')
+def check_media(path: str, count) -> list:
+    path = path.strip('"').replace(os.sep, '/')
+    try:
+        int(count)
+    except ValueError:
+        print('请提供合法的整数')
+        time.sleep(3)
+        exit()
+
     if not os.path.exists(path):
         print(path, '不存在')
         time.sleep(3)
         exit()
-    # if path[-1] != '/':  # 如果没有以'/'为结尾 就补齐
-    #     path = path + '/'
-
     # folders = []
     # for root, dirs, files in os.walk(path):
     #     for dir_name in dirs:
@@ -241,7 +245,7 @@ async def main():
         time.sleep(5)
     if args.media:
         start_time = time.time()
-        folder = check_media(args.media)  # 查找给定路径下的文件夹
+        folder = check_media(args.media, args.count)  # 查找给定路径下的文件夹
         result = tag_folder(folder, args.ts_end)  # 选出文件名为纯数字且数量大于5个的文件夹
         encrypted_folders, unencrypted_folders, key_files, key_map = classify_folders(result, "key")  #
         if encrypted_folders:  # 有加密视频
