@@ -14,12 +14,13 @@ except ModuleNotFoundError:
 
 def check_media(path: str, count) -> list:
     path = path.strip('"').replace(os.sep, '/')
-    try:
-        int(count)
-    except ValueError:
-        print('请提供合法的整数')
-        time.sleep(3)
-        exit()
+    if count:
+        try:
+            int(count)
+        except ValueError:
+            print('请输入合法的整数')
+            time.sleep(3)
+            exit()
 
     if not os.path.exists(path):
         print(path, '不存在')
