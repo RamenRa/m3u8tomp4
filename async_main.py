@@ -14,8 +14,8 @@ except ModuleNotFoundError:
 
 def check_media(path: str) -> list:
     path = path.replace(os.sep, '/')
-    if path[-1] != '/':  # 如果没有以'/'为结尾 就补齐
-        path = path + '/'
+    # if path[-1] != '/':  # 如果没有以'/'为结尾 就补齐
+    #     path = path + '/'
 
     # folders = []
     # for root, dirs, files in os.walk(path):
@@ -99,6 +99,7 @@ def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
                 .run(capture_stderr=True)
             )
     else:
+        print('使用系统ffmpeg')
         if function == "normal":
             cmd = f'ffmpeg -f concat -safe 0 -i "{new_m3u8}" -c copy "{output_file}"'
             os.system(cmd)
