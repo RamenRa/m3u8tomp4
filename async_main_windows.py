@@ -9,12 +9,13 @@ ffmpeg_flag = False
 
 def check_media(path: str, count) -> list:
     path = path.strip('"').replace(os.sep, '/')
-    try:
-        int(count)
-    except ValueError:
-        print('请输入合法的整数')
-        time.sleep(3)
-        exit()
+    if count:
+        try:
+            int(count)
+        except ValueError:
+            print('请输入合法的整数')
+            time.sleep(3)
+            exit()
 
     if not os.path.exists(path):
         print(path, '不存在')
@@ -253,8 +254,11 @@ if __name__ == "__main__":
     media = input("请输入媒体文件路径（media）：")
     ts_end = input("请输入ts文件后缀（默认为空）：")
     count = input("请输入最大同时转换数（默认为8）：")
+    if not count:
+        count = 8
 
     asyncio.run(main(media, ts_end, count))
+    time.sleep(3)
 
 
 
