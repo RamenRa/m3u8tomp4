@@ -29,9 +29,15 @@ def check_media(path: str, count) -> list:
     #         folders.append(full_path)
     folders = []
     for folder in os.listdir(path):
+        old_m3u8 = os.path.join(path, folder, '.m3u8')
+        old_txt = os.path.join(path, folder, '.txt')
         full_path = os.path.join(path, folder)
         if os.path.isdir(full_path):
             folders.append(full_path)
+        if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
+            os.remove(old_m3u8)
+        elif os.path.exists(old_txt):
+            os.remove(old_txt)
     return folders
 
 
@@ -59,11 +65,6 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
     key_map = []
 
     for folder in folders:
-        if os.path.exists(folder + '.m3u8'):  # 删除之前生成的.m3u8
-            os.remove(folder + '.m3u8')
-        if os.path.exists(folder + '.txt'):
-            os.remove(folder + '.txt')  # 删除之前生成的.txt
-
         has_key_file = False
         current_key_files = []
         current_auxiliary_files = []
@@ -92,7 +93,6 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
         exit()
 
 
-
 def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
     if ffmpeg_flag:   # 好像会更快
         if function == "normal":
@@ -111,6 +111,7 @@ def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
             )
     else:
         ffmpeg_path = os.path.join(os.path.dirname(sys.argv[0]), '_internal/ffmpeg_pack/ffmpeg.exe').replace(os.sep, '/')
+        # print(ffmpeg_path)
         if function == "normal":
             cmd = f'{ffmpeg_path} -f concat -safe 0 -i "{new_m3u8}" -c copy "{output_file}"'
             os.system(cmd)
