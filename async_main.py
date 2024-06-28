@@ -129,16 +129,18 @@ async def cmd_pool(new_m3u8: str, output_file: str, function: str, semaphore: as
             print('ffmpeg error:', e.stderr.decode('utf8'))
             raise
 
-async def AES128(encrypted_folders: List[str], key_files: List[str], key_map: List[str], ts_end: str, semaphore: asyncio.Semaphore):
-    async def sort_func(path: str) -> List[int]:
-        file_list = []
-        for dirpath, dirnames, filenames in os.walk(path):
-            for filename in filenames:
-                if len(filename) < 10 and filename.isdigit():
-                    file_list.append(int(filename))
-        file_list.sort()
-        return file_list
 
+# 按文件名排序
+async def sort_func(folder: str) -> List[int]:
+    file_list = []
+    for dirpath, dirnames, filenames in os.walk(folder):
+        for filename in filenames:
+            if len(filename) < 10 and filename.isdigit():
+                file_list.append(int(filename))
+    file_list.sort()
+    return file_list
+
+async def AES128(encrypted_folders: List[str], key_files: List[str], key_map: List[str], ts_end: str, semaphore: asyncio.Semaphore):
     async def find_head(m3u8: str) -> Tuple[str, int, List[int]]:
         change_line = []
         head_flag = False
@@ -202,15 +204,6 @@ async def AES128(encrypted_folders: List[str], key_files: List[str], key_map: Li
 
 
 async def Normal(unencrypted_folders, ts_end, semaphore):
-    async def sort_func(folder: str) -> List[int]:
-        file_list = []
-        for dirpath, dirnames, filenames in os.walk(folder):
-            for filename in filenames:
-                if len(filename) < 10 and filename.isdigit():
-                    file_list.append(int(filename))
-        file_list.sort()
-        return file_list
-
     async def process_folder(path: str):
         file_list = await sort_func(path)
         tmp_txt = os.path.join(path, '.txt')
