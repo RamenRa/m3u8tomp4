@@ -34,20 +34,25 @@ def check_media(path: str, count) -> list:
     #         folders.append(full_path)
     folders = []
     for folder in os.listdir(path):
+        old_m3u8 = os.path.join(path, folder, '.m3u8')
+        old_txt = os.path.join(path, folder, '.txt')
         full_path = os.path.join(path, folder)
         if os.path.isdir(full_path):
             folders.append(full_path)
+        if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
+            os.remove(old_m3u8)
+        elif os.path.exists(old_txt):
+            os.remove(old_txt)
     return folders
 
 
 def tag_folder(folders: List[str], ext: str) -> List[str]:
     matching_folders = []
     if ext:
-        if ext:
-            # 历史遗留问题，保持以前用户的使用习惯
-            pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$') \
-                if not ext.startswith('.') \
-                else re.compile(r'^\d+' + re.escape(ext) + r'$')
+        # 历史遗留问题，保持以前用户的使用习惯
+        pattern = re.compile(r'^\d+\.' + re.escape(ext) + r'$') \
+            if not ext.startswith('.') \
+            else re.compile(r'^\d+' + re.escape(ext) + r'$')
     else:
         # 如果扩展名为空，只匹配纯数字文件名
         pattern = re.compile(r'^\d+$')
@@ -63,12 +68,8 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
     unencrypted_folders = []
     key_files = []
     key_map = []
-    for folder in folders:
-        if os.path.exists(folder + '.m3u8'):  # 删除之前生成的.m3u8
-            os.remove(folder + '.m3u8')
-        if os.path.exists(folder + '.txt'):
-            os.remove(folder + '.txt')  # 删除之前生成的.txt
 
+    for folder in folders:
         has_key_file = False
         current_key_files = []
         current_auxiliary_files = []
@@ -76,10 +77,10 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
 
         for file in os.listdir(folder):
             file_path = os.path.join(folder, file)
-            if file.endswith('.' + key_ext):
+            if file.endswith('.' + key_ext) and not has_key_file:
                 has_key_file = True
                 current_key_files.append(file_path)
-            if (len(file) > 10 ) and not has_added_aux_file:
+            if (len(file) > 10 or file.endswith('.m3u8')) and not has_added_aux_file:
                 current_auxiliary_files.append(file_path)
                 has_added_aux_file = True  # 每个文件夹只允许一个m3u8文件
 
@@ -89,10 +90,10 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
             key_map.extend(current_auxiliary_files)
         else:
             unencrypted_folders.append(folder)
-    if len(encrypted_folders) == len(key_files) == len(key_map):  # 检查key和m3u8数目
+    if len(encrypted_folders) == len(key_files) == len(key_map):  # 验证key和m3u8是否一一对应
         return encrypted_folders, unencrypted_folders, key_files, key_map
     else:
-        print('加密视频的key文件和m3u8文件数目不一致')
+        print('加密视频的key文件和m3u8文件数目不一一对应')
         time.sleep(3)
         exit()
 
