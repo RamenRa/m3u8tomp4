@@ -82,7 +82,7 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
         else:
             unencrypted_folders.append(folder)
 
-    if len(key_files) == len(key_map):
+    if len(key_files) == len(encrypted_folders):
         return encrypted_folders, unencrypted_folders, key_files, key_map  # 数据正常返回内容
     else:
         print('加密视频数目与key文件数目不匹配')
@@ -236,7 +236,7 @@ async def main(media, ts_end, count):
         if unencrypted_folders:
             await Normal(unencrypted_folders, ts_end, semaphore)
         end_time = time.time()
-        print("用时：", end_time - start_time, "秒")
+        print("用时： {:.2f} 秒".format(end_time - start_time))
     else:
         print("请提供 --media 参数")
         exit()
