@@ -61,33 +61,36 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
     for folder in folders:
         if os.path.exists(folder + '.m3u8'):  # 删除之前生成的.m3u8
             os.remove(folder + '.m3u8')
-        if os.path.exists(folder + '.txt'):  # 删除之前生成的.txt
-            os.remove(folder + '.txt')
+        if os.path.exists(folder + '.txt'):
+            os.remove(folder + '.txt')  # 删除之前生成的.txt
 
-        has_key_file = False  # 每个文件夹只允许一个key文件
+        has_key_file = False
+        current_key_files = []
+        current_auxiliary_files = []
         has_added_aux_file = False  # 每个文件夹只允许一个m3u8文件
 
         for file in os.listdir(folder):
             file_path = os.path.join(folder, file)
-            if not has_key_file and file.endswith('.' + key_ext):
+            if file.endswith('.' + key_ext):
                 has_key_file = True
-                key_files.append(file_path)
-
-            if not has_added_aux_file and (len(file) > 10 or file.endswith('.m3u8')):
-                key_map.append(file_path)
-                has_added_aux_file = True
+                current_key_files.append(file_path)
+            if (len(file) > 10 or file.endswith('.m3u8')) and not has_added_aux_file:
+                current_auxiliary_files.append(file_path)
+                has_added_aux_file = True  # 每个文件夹只允许一个m3u8文件
 
         if has_key_file:
             encrypted_folders.append(folder)
+            key_files.extend(current_key_files)
+            key_map.extend(current_auxiliary_files)
         else:
             unencrypted_folders.append(folder)
-
-    if len(key_files) == len(encrypted_folders):
-        return encrypted_folders, unencrypted_folders, key_files, key_map  # 数据正常返回内容
+    if len(encrypted_folders) == len(key_files) == len(key_map):  # 验证key和m3u8是否一一对应
+        return encrypted_folders, unencrypted_folders, key_files, key_map
     else:
-        print('加密视频数目与key文件数目不匹配')
+        print('加密视频的key文件和m3u8文件数目不一一对应')
         time.sleep(3)
-        exit(0)
+        exit()
+
 
 
 def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
