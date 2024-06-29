@@ -24,6 +24,10 @@ pyinstaller .\async_main_windows.spec
 ### 文件夹示例
 ***
 下图目录填写示例：E:/tes，视频1、视频2加密或未加密均可。
+
 运行程序后将会在 E:/tes 下生成“视频1.mp4”、“视频2.mp4”。 
 ![示例1](https://github.com/RamenRa/m3u8tomp4/blob/main/old/%E7%A4%BA%E4%BE%8B1.PNG)
+下图中1号文件，如果是加密视频则必须有
+
+在U某浏览器中，可能存在3号文件。此时此刻，可以没有2号文件。
 ![示例2](https://github.com/RamenRa/m3u8tomp4/blob/main/old/%E7%A4%BA%E4%BE%8B2.PNG)
