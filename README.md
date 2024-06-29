@@ -23,4 +23,4 @@ pyinstaller .\async_main_windows.spec
 
 ### 文件夹示例
 ***
-  ![[https://github.com/RamenRa/m3u8tomp4/blob/main/old/%E7%A4%BA%E4%BE%8B1.PNG]]
+  ![示例1][https://github.com/RamenRa/m3u8tomp4/blob/main/old/%E7%A4%BA%E4%BE%8B1.PNG]
