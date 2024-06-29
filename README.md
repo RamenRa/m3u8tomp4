@@ -20,3 +20,7 @@ pip install pyinstaller
 pyinstaller .\async_main_windows.spec
 ```
 以上命令结束后，查看项目下的dit文件夹，找到可执行文件即可
+
+### 文件夹示例
+***
+(示例1)[https://github.com/RamenRa/m3u8tomp4/blob/main/old/%E7%A4%BA%E4%BE%8B1.PNG]
