@@ -258,7 +258,6 @@ async def main(media, ts_end, count):
 if __name__ == "__main__":
     assert sys.version_info >= (3, 7), "Script requires Python 3.7+."
 
-    print(ffmpeg_flag)
     media = input("请输入媒体文件路径（media）：")
     ts_end = input("请输入ts文件后缀（默认为空）：")
     count = input("请输入最大同时转换数（默认为8）：")
