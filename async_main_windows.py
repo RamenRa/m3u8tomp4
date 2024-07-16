@@ -4,7 +4,11 @@ import os
 import re
 from typing import List, Tuple
 import time
-ffmpeg_flag = False
+try:
+    import ffmpeg  # 好像会更快
+    ffmpeg_flag = True
+except ModuleNotFoundError:
+    ffmpeg_flag = False
 
 
 def check_media(path: str, count) -> list:
@@ -29,15 +33,15 @@ def check_media(path: str, count) -> list:
     #         folders.append(full_path)
     folders = []
     for folder in os.listdir(path):
-        old_m3u8 = os.path.join(path, folder, '.m3u8')
-        old_txt = os.path.join(path, folder, '.txt')
         full_path = os.path.join(path, folder)
+        old_m3u8 = os.path.join(full_path, '.m3u8')
+        old_txt = os.path.join(full_path, '.txt')
         if os.path.isdir(full_path):
             folders.append(full_path)
-        if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
-            os.remove(old_m3u8)
-        elif os.path.exists(old_txt):
-            os.remove(old_txt)
+            if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
+                os.remove(old_m3u8)
+            elif os.path.exists(old_txt):
+                os.remove(old_txt)
     return folders
 
 
@@ -72,12 +76,14 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
 
         for file in os.listdir(folder):
             file_path = os.path.join(folder, file)
-            if file.endswith('.' + key_ext):
+            if file.endswith('.' + key_ext) and not has_key_file:
                 has_key_file = True
                 current_key_files.append(file_path)
             if (len(file) > 10 or file.endswith('.m3u8')) and not has_added_aux_file:
                 current_auxiliary_files.append(file_path)
                 has_added_aux_file = True  # 每个文件夹只允许一个m3u8文件
+            if has_key_file and has_added_aux_file:  # 肯定是加密视频
+                break
 
         if has_key_file:
             encrypted_folders.append(folder)
@@ -112,6 +118,9 @@ def ffmpeg_cmd(new_m3u8: str, output_file: str, function: str) -> None:
     else:
         ffmpeg_path = os.path.join(os.path.dirname(sys.argv[0]), '_internal/ffmpeg_pack/ffmpeg.exe').replace(os.sep, '/')
         # print(ffmpeg_path)
+        if not os.path.exists(ffmpeg_path):
+            print(f"{ffmpeg_path}不存在")
+            exit()
         if function == "normal":
             cmd = f'{ffmpeg_path} -f concat -safe 0 -i "{new_m3u8}" -c copy "{output_file}"'
             os.system(cmd)
@@ -225,6 +234,7 @@ async def Normal(unencrypted_folders, ts_end, semaphore):
 
 
 async def main(media, ts_end, count):
+    semaphore = asyncio.Semaphore(count)  # 控制同时转换的数量
     if not ts_end:
         print("---------没有指定ts后缀，默认为空---------")
         print("--------- 若想指定，请5秒内取消 ---------")
@@ -234,7 +244,6 @@ async def main(media, ts_end, count):
         folder = check_media(media, count)  # 先检查输入参数并查找给定路径下的文件夹
         result = tag_folder(folder, ts_end)  # 选出文件名为纯数字且数量大于5个的文件夹
         encrypted_folders, unencrypted_folders, key_files, key_map = classify_folders(result, "key")
-        semaphore = asyncio.Semaphore(count)  # 控制同时转换的数量
         if encrypted_folders:  # 有加密视频
             await AES128(encrypted_folders, key_files, key_map, ts_end, semaphore)
         if unencrypted_folders:
@@ -249,6 +258,7 @@ async def main(media, ts_end, count):
 if __name__ == "__main__":
     assert sys.version_info >= (3, 7), "Script requires Python 3.7+."
 
+    print(ffmpeg_flag)
     media = input("请输入媒体文件路径（media）：")
     ts_end = input("请输入ts文件后缀（默认为空）：")
     count = input("请输入最大同时转换数（默认为8）：")
