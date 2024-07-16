@@ -34,15 +34,15 @@ def check_media(path: str, count) -> list:
     #         folders.append(full_path)
     folders = []
     for folder in os.listdir(path):
-        old_m3u8 = os.path.join(path, folder, '.m3u8')
-        old_txt = os.path.join(path, folder, '.txt')
         full_path = os.path.join(path, folder)
+        old_m3u8 = os.path.join(full_path, '.m3u8')
+        old_txt = os.path.join(full_path, '.txt')
         if os.path.isdir(full_path):
             folders.append(full_path)
-        if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
-            os.remove(old_m3u8)
-        elif os.path.exists(old_txt):
-            os.remove(old_txt)
+            if os.path.exists(old_m3u8):  # 删除之前生成的.m3u8或者.txt
+                os.remove(old_m3u8)
+            elif os.path.exists(old_txt):
+                os.remove(old_txt)
     return folders
 
 
@@ -83,6 +83,8 @@ def classify_folders(folders: List[str], key_ext: str) -> Tuple[List[str], List[
             if (len(file) > 10 or file.endswith('.m3u8')) and not has_added_aux_file:
                 current_auxiliary_files.append(file_path)
                 has_added_aux_file = True  # 每个文件夹只允许一个m3u8文件
+            if has_key_file and has_added_aux_file:   # 肯定是加密视频
+                break
 
         if has_key_file:
             encrypted_folders.append(folder)
@@ -261,12 +263,6 @@ async def main():
 if __name__ == "__main__":
     assert sys.version_info >= (3, 7), "Script requires Python 3.7+."
     asyncio.run(main())
-
-
-
-
-
-
 
 
 
