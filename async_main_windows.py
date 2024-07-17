@@ -4,11 +4,7 @@ import os
 import re
 from typing import List, Tuple
 import time
-try:
-    import ffmpeg  # 好像会更快
-    ffmpeg_flag = True
-except ModuleNotFoundError:
-    ffmpeg_flag = False
+ffmpeg_flag = False
 
 
 def check_media(path: str, count) -> list:
