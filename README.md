@@ -7,19 +7,20 @@
 
 ### 直接使用：
 ***
-* 需要系统环境变量ffmpeg可用 或者 安装ffmpeg-python库
+* 需要系统环境变量ffmpeg可用 或者`pip install ffmpeg-python`
 
-示例：`python3 async_main.py --media "D:\Huawei Share\test" `
+示例：
+`python3 async_main.py --media "D:\Huawei Share\test" `
 
-* 请尽可能保留路径的双引号 
+* 请保留路径的双引号 
 ### 自行打包exe
 ***
-请先编辑async_main_windows.spec的路径部分，并且自行下载ffmpeg到对应路径（github文件大小限制）
+自行下载ffmpeg，并且编辑async_main_windows.spec文件的路径部分，指向到`ffmpeg.exe`
 ```
 pip install pyinstaller
 pyinstaller .\async_main_windows.spec
 ```
-以上命令结束后，查看项目下的dit文件夹，找到可执行文件即可
+以上命令结束后，查看项目下的dit文件夹，找到可执行文件
 
 ### 文件夹示例
 ***
